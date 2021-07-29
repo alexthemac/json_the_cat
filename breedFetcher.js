@@ -1,23 +1,24 @@
 //allows us to use request
 const request = require("request");
 
-//taking the console input and storing the bredd
-const breed = process.argv[2];
+const fetchBreedDescription = function(breed, callback) {
+  request(`https://api.thecatapi.com/v1/breeds/search?q=${breed}`, (error, response, body) => {
 
-request(`https://api.thecatapi.com/v1/breeds/search?q=${breed}`, (error, response, body) => {
-  //If error, return request failed and error details
-  if (error !== null) {
-    return console.log("Request Failed:", error);
-  }
-  
-  //stores the body in data variable.
-  const data = JSON.parse(body);
-  
-  //if breed not found, return breed not found
-  if (data.length === 0) {
-    console.log("Breed name not found");
-  //if breed found, return breed description
-  } else {
-    console.log(data[0]['description']);
-  }
-});
+    //If there is an error, pass the error to callback function
+    if (error !== null) {
+      callback(error);
+    //If there is no error, pass the data and error to callback function.
+    } else {
+      //If there is a valid breed, send the description as the data to the callback function.
+      if (JSON.parse(body).length !== 0) {
+        const data = JSON.parse(body)[0]['description'];
+        callback(error, data);
+      //If there is no valid breed, send Breed name not found as the data to the callback function.
+      } else {
+        callback(error, "Breed name not found");
+      }
+    }
+  });
+};
+
+module.exports = {fetchBreedDescription};
